@@ -19,13 +19,15 @@ config("qrcodegen_config") {
 }
 
 if (defined(ohos_lite)) {
-  shared_library("qrcodegen") {
-    sources = [ "cpp/QrCode.cpp" ]
+  lite_library("qrcodegen") {
+    if (ohos_kernel_type == "liteos_m") {
+      target_type = "static_library"
+    } else {
+      target_type = "shared_library"
+    }
+    sources = [ "cpp/qrcodegen.cpp" ]
     include_dirs = [ "//third_party/qrcodegen/cpp" ]
-    cflags = [
-      "-Wall",
-      "-fno-exceptions",
-    ]
+    cflags = [ "-Wall" ]
     cflags_cc = cflags
     public_configs = [ ":libqrcodegen_config" ]
   }
@@ -35,7 +37,7 @@ if (defined(ohos_lite)) {
   }
 } else {
   ohos_static_library("qrcodegen_static") {
-    sources = [ "cpp/QrCode.cpp" ]
+    sources = [ "cpp/qrcodegen.cpp" ]
     include_dirs = [ "//third_party/qrcodegen/cpp" ]
     configs = [ ":qrcodegen_config" ]
     public_configs = [ ":libqrcodegen_config" ]
