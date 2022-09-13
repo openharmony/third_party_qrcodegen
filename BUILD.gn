@@ -27,14 +27,14 @@ if (defined(ohos_lite)) {
     }
     sources = [ "cpp/qrcodegen.cpp" ]
     include_dirs = [ "//third_party/qrcodegen/cpp" ]
-    if (board_toolchain_type != "iccarm") {
-      cflags = [ "-Wall" ]
-      cflags_cc = cflags
-    } else {
+    if (defined(board_toolchain_type) && board_toolchain_type == "iccarm") {
       cflags = [
         "--diag_suppress",
         "Pe366",
       ]
+      cflags_cc = cflags
+    } else {
+      cflags = [ "-Wall" ]
       cflags_cc = cflags
     }
     public_configs = [ ":libqrcodegen_config" ]
