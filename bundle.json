@@ -14,7 +14,9 @@
         "name": "qrcodegen",
         "subsystem": "thirdparty",
         "syscap": [],
-        "features": [],
+        "features": [
+            "qrcodegen_feature_ace_engine_qrcode_able"
+        ],
         "adapted_system_type": [
             "small",
             "mini",
@@ -28,7 +30,11 @@
         },
         "build": {
             "sub_component": [],
-            "inner_kits": [],
+            "inner_kits": [
+                {
+                    "name": "//third_party/qrcodegen:ace_engine_qrcode"
+                }
+            ],
             "test": []
         }
     }

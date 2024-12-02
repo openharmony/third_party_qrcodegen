@@ -1,5 +1,9 @@
 # Copyright (c) Huawei Technologies Co., Ltd. 2020. All rights reserved.
 
+declare_args() {
+  qrcodegen_feature_ace_engine_qrcode_able = true
+}
+
 if (defined(ohos_lite)) {
   import("//build/lite/config/component/lite_component.gni")
 } else {
@@ -49,5 +53,23 @@ if (defined(ohos_lite)) {
     include_dirs = [ "//third_party/qrcodegen/cpp" ]
     configs = [ ":qrcodegen_config" ]
     public_configs = [ ":libqrcodegen_config" ]
+  }
+  if (qrcodegen_feature_ace_engine_qrcode_able) {
+    config("ace_engine_qrcode_config") {
+      include_dirs = [ "//third_party/qrcodegen/cpp" ]
+      defines = [ "ACE_ENGINE_QRCODE_ABLE" ]
+      cflags = [
+        "-Wall",
+        "-Wno-reorder",
+      ]
+      cflags_cc = cflags
+    }
+
+    ohos_static_library("ace_engine_qrcode") {
+      sources = [ "cpp/qrcodegen.cpp" ]
+      public_configs = [ ":ace_engine_qrcode_config" ]
+      subsystem_name = "thirdparty"
+      part_name = "qrcodegen"
+    }
   }
 }
