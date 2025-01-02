@@ -22,6 +22,8 @@
  */
 
 #pragma once
+#ifndef QRCODEEGEN_H
+#define QRCODEEGEN_H
 
 #include <array>
 #include <cstdint>
@@ -52,6 +54,7 @@ class QrSegment final {
 	 */
 	public: class Mode final {
 		
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 		/*-- Constants --*/
 		
 		public: static const Mode NUMERIC;
@@ -59,7 +62,8 @@ class QrSegment final {
 		public: static const Mode BYTE;
 		public: static const Mode KANJI;
 		public: static const Mode ECI;
-		
+#endif
+
 		
 		/*-- Fields --*/
 		
@@ -72,7 +76,13 @@ class QrSegment final {
 		
 		/*-- Constructor --*/
 		
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+		public: Mode(int mode, int cc0, int cc1, int cc2);
+
+		public: Mode() {}
+#else
 		private: Mode(int mode, int cc0, int cc1, int cc2);
+#endif
 		
 		
 		/*-- Methods --*/
@@ -99,9 +109,14 @@ class QrSegment final {
 	 * byte mode. All input byte vectors are acceptable. Any text string
 	 * can be converted to UTF-8 bytes and encoded as a byte mode segment.
 	 */
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: static QrSegment makeBytes(const std::vector<std::uint8_t> &data);
+#else
 	public: static QrSegment makeBytes(const std::vector<std::uint8_t> &data);
+
+#endif
 	
-	
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 	/* 
 	 * Returns a segment representing the given string of decimal digits encoded in numeric mode.
 	 */
@@ -114,7 +129,8 @@ class QrSegment final {
 	 * dollar, percent, asterisk, plus, hyphen, period, slash, colon.
 	 */
 	public: static QrSegment makeAlphanumeric(const char *text);
-	
+
+#endif
 	
 	/* 
 	 * Returns a list of zero or more segments to represent the given text string. The result
@@ -122,7 +138,8 @@ class QrSegment final {
 	 */
 	public: static std::vector<QrSegment> makeSegments(const char *text);
 	
-	
+
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 	/* 
 	 * Returns a segment representing an Extended Channel Interpretation
 	 * (ECI) designator with the given assignment value.
@@ -145,13 +162,18 @@ class QrSegment final {
 	 * (uppercase only), space, dollar, percent, asterisk, plus, hyphen, period, slash, colon.
 	 */
 	public: static bool isAlphanumeric(const char *text);
-	
-	
-	
+#endif
+
+
 	/*---- Instance fields ----*/
 	
 	/* The mode indicator of this segment. Accessed through getMode(). */
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: Mode mode;
+#else
 	private: const Mode *mode;
+#endif
+	
 	
 	/* The length of this segment's unencoded data. Measured in characters for
 	 * numeric/alphanumeric/kanji mode, bytes for byte mode, and 0 for ECI mode.
@@ -165,14 +187,16 @@ class QrSegment final {
 	
 	/*---- Constructors (low level) ----*/
 	
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 	/* 
 	 * Creates a new QR Code segment with the given attributes and data.
 	 * The character count (numCh) must agree with the mode and the bit buffer length,
 	 * but the constraint isn't checked. The given bit buffer is copied and stored.
 	 */
 	public: QrSegment(const Mode &md, int numCh, const std::vector<bool> &dt);
+#endif
 	
-	
+
 	/* 
 	 * Creates a new QR Code segment with the given parameters and data.
 	 * The character count (numCh) must agree with the mode and the bit buffer length,
@@ -206,13 +230,13 @@ class QrSegment final {
 	// segment has too many characters to fit its length field, or the total bits exceeds INT_MAX.
 	public: static int getTotalBits(const std::vector<QrSegment> &segs, int version);
 	
-	
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 	/*---- Private constant ----*/
 	
 	/* The set of all legal characters in alphanumeric mode, where
 	 * each character value maps to the index in the string. */
 	private: static const char *ALPHANUMERIC_CHARSET;
-	
+#endif
 };
 
 
@@ -264,7 +288,8 @@ class QrCode final {
 	 */
 	public: static QrCode encodeText(const char *text, Ecc ecl);
 	
-	
+
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 	/* 
 	 * Returns a QR Code representing the given binary data at the given error correction level.
 	 * This function always encodes using the binary segment mode, not any text mode. The maximum number of
@@ -272,8 +297,9 @@ class QrCode final {
 	 * The ECC level of the result may be higher than the ecl argument if it can be done without increasing the version.
 	 */
 	public: static QrCode encodeBinary(const std::vector<std::uint8_t> &data, Ecc ecl);
-	
-	
+#endif
+
+
 	/*---- Static factory functions (mid level) ----*/
 	
 	/* 
@@ -287,8 +313,13 @@ class QrCode final {
 	 * between modes (such as alphanumeric and byte) to encode text in less space.
 	 * This is a mid-level API; the high-level API is encodeText() and encodeBinary().
 	 */
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: static QrCode encodeSegments(const std::vector<QrSegment> &segs, Ecc ecl,
+		int minVersion=1, int maxVersion=40, int mask=-1, bool boostEcl=true);  // All optional parameters
+#else
 	public: static QrCode encodeSegments(const std::vector<QrSegment> &segs, Ecc ecl,
 		int minVersion=1, int maxVersion=40, int mask=-1, bool boostEcl=true);  // All optional parameters
+#endif
 	
 	
 	
@@ -321,6 +352,11 @@ class QrCode final {
 	// Indicates function modules that are not subjected to masking. Discarded when constructor finishes.
 	private: std::vector<std::vector<bool> > isFunction;
 	
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	/* QR Code Generation Success Flag.
+    * This Success :true */
+	private: bool flag;
+#endif
 	
 	
 	/*---- Constructor (low level) ----*/
@@ -331,11 +367,21 @@ class QrCode final {
 	 * This is a low-level API that most users should not use directly.
 	 * A mid-level API is the encodeSegments() function.
 	 */
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: QrCode(int ver, Ecc ecl, const std::vector<std::uint8_t> &dataCodewords, int msk);
+#else
 	public: QrCode(int ver, Ecc ecl, const std::vector<std::uint8_t> &dataCodewords, int msk);
+#endif
 	
 	
 	
 	/*---- Public instance methods ----*/
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	/*
+	* Returns this QR Code's version, in the range [1, 40].
+	*/
+	public: bool getFlag() const;
+#endif
 	
 	/* 
 	 * Returns this QR Code's version, in the range [1, 40].
@@ -409,7 +455,11 @@ class QrCode final {
 	
 	// Returns a new byte string representing the given data with the appropriate error correction
 	// codewords appended to it, based on this object's version and error correction level.
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: std::vector<std::uint8_t> addEccAndInterleave(const std::vector<std::uint8_t> &data);
+#else
 	private: std::vector<std::uint8_t> addEccAndInterleave(const std::vector<std::uint8_t> &data) const;
+#endif
 	
 	
 	// Draws the given sequence of 8-bit codewords (data and error correction) onto the entire
@@ -424,10 +474,12 @@ class QrCode final {
 	// QR Code needs exactly one (not zero, two, etc.) mask applied.
 	private: void applyMask(int msk);
 	
-	
+
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 	// Calculates and returns the penalty score based on state of this QR Code's current modules.
 	// This is used by the automatic mask choice algorithm to find the mask pattern that yields the lowest score.
 	private: long getPenaltyScore() const;
+#endif
 	
 	
 	
@@ -453,18 +505,30 @@ class QrCode final {
 	
 	// Returns a Reed-Solomon ECC generator polynomial for the given degree. This could be
 	// implemented as a lookup table over all possible parameter values, instead of as an algorithm.
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: std::vector<std::uint8_t> reedSolomonComputeDivisor(int degree);
+#else
 	private: static std::vector<std::uint8_t> reedSolomonComputeDivisor(int degree);
+#endif
 	
 	
 	// Returns the Reed-Solomon error correction codeword for the given data and divisor polynomials.
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: std::vector<std::uint8_t> reedSolomonComputeRemainder(const std::vector<std::uint8_t> &data, const std::vector<std::uint8_t> &divisor);
+#else
 	private: static std::vector<std::uint8_t> reedSolomonComputeRemainder(const std::vector<std::uint8_t> &data, const std::vector<std::uint8_t> &divisor);
+#endif
 	
 	
 	// Returns the product of the two given field elements modulo GF(2^8/0x11D).
 	// All inputs are valid. This could be implemented as a 256*256 lookup table.
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: std::uint8_t reedSolomonMultiply(std::uint8_t x, std::uint8_t y);
+#else
 	private: static std::uint8_t reedSolomonMultiply(std::uint8_t x, std::uint8_t y);
-	
-	
+#endif
+
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 	// Can only be called immediately after a light run is added, and
 	// returns either 0, 1, or 2. A helper function for getPenaltyScore().
 	private: int finderPenaltyCountPatterns(const std::array<int,7> &runHistory) const;
@@ -476,6 +540,12 @@ class QrCode final {
 	
 	// Pushes the given value to the front and drops the last value. A helper function for getPenaltyScore().
 	private: void finderPenaltyAddHistory(int currentRunLength, std::array<int,7> &runHistory) const;
+#endif
+
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	// clear Function.
+	private: void clearFunctionPatterns();
+#endif
 	
 	
 	// Returns true iff the i'th bit of x is set to 1.
@@ -483,20 +553,31 @@ class QrCode final {
 	
 	
 	/*---- Constants and tables ----*/
-	
+
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	// The error version number supported in the QR Code Model 2 standard.
+	private: static constexpr int ERR_VERSION = 0;
+#endif
 	// The minimum version number supported in the QR Code Model 2 standard.
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: static constexpr int MIN_VERSION =  1;
+#else
 	public: static constexpr int MIN_VERSION =  1;
+#endif
 	
 	// The maximum version number supported in the QR Code Model 2 standard.
+#if defined(ACE_ENGINE_QRCODE_ABLE)
+	private: static constexpr int MAX_VERSION = 40;
+#else
 	public: static constexpr int MAX_VERSION = 40;
-	
-	
+#endif
+#if !defined(ACE_ENGINE_QRCODE_ABLE)
 	// For use in getPenaltyScore(), when evaluating which mask is best.
 	private: static const int PENALTY_N1;
 	private: static const int PENALTY_N2;
 	private: static const int PENALTY_N3;
 	private: static const int PENALTY_N4;
-	
+#endif
 	
 	private: static const std::int8_t ECC_CODEWORDS_PER_BLOCK[4][41];
 	private: static const std::int8_t NUM_ERROR_CORRECTION_BLOCKS[4][41];
@@ -547,3 +628,4 @@ class BitBuffer final : public std::vector<bool> {
 };
 
 }
+#endif // QRCODEEGEN_H
