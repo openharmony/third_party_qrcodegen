@@ -33,7 +33,17 @@
             "inner_kits": [
                 {
                     "name": "//third_party/qrcodegen:ace_engine_qrcode"
+                },
+                {
+                    "name": "//third_party/qrcodegen:qrcodegen_static",
+                    "header": {
+                      "header_files": [
+                        "qrcodegen.hpp"
+                      ],
+                      "header_base": "//third_party/qrcodegen/cpp"
+                    }
                 }
+
             ],
             "test": []
         }
