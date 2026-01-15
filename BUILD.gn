@@ -50,14 +50,14 @@ if (defined(ohos_lite)) {
 } else {
   ohos_static_library("qrcodegen_static") {
     visibility = [
- 	    ":*",
- 	    "//vendor/huawei/domains/iotdev/home_host_service/services/touchui/business:touchui",
+      ":*",
+      "//vendor/huawei/domains/iotdev/home_host_service/services/touchui/business:touchui",
       "//foundation/arkui/ui_ext_lite/tools/ide:graphic_lite",
- 	    "//foundation/arkui/ui_lite:ui",
+      "//foundation/arkui/ui_lite:ui",
       "//foundation/arkui/ui_lite/ext/ide:ui_ide",
- 	    "//out/*",
- 	    "//vendor/hisi/confidential/contexthub/src/framework/hisi/ui/third_party/*",
- 	  ]
+      "//out/*",
+      "//vendor/hisi/confidential/contexthub/src/framework/hisi/ui/third_party/*",
+    ]
     sources = [ "cpp/qrcodegen.cpp" ]
     include_dirs = [ "//third_party/qrcodegen/cpp" ]
     configs = [ ":qrcodegen_config" ]
